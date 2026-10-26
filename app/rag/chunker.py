@@ -13,9 +13,40 @@ class Chunk:
 
 
 def _split_long(text: str, size: int) -> list[str]:
-    if len(text) <= size:
-        return [text]
-    pieces, buf = [], ""
+    text = text.strip()
+
+    if not text:
+        return []
+
+    if size <= 0:
+        raise ValueError("size must be greater than zero")
+
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    pieces = []
+    current = ""
+
+    for sentence in sentences:
+        if len(sentence) > size:
+            if current:
+                pieces.append(current)
+                current = ""
+
+            for i in range(0, len(sentence), size):
+                pieces.append(sentence[i:i + size])
+
+        elif not current:
+            current = sentence
+        elif len(current) + 1 + len(sentence) <= size:
+            current += " " + sentence
+        else:
+            pieces.append(current)
+            current = sentence
+
+    if current:
+        pieces.append(current)
+
+    return pieces
+
     
     for sent in sent.split(text):
         while len(sent) > size:  # no punctuation: hard split at whitespace
